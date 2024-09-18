@@ -11,7 +11,7 @@ import codingblackfemales.sequencer.net.TestNetwork;
 import codingblackfemales.service.MarketDataService;
 import codingblackfemales.service.OrderService;
 import messages.marketdata.*;
-import org.agrona.concurrent.UnsafeBuffer;
+import org.agrona.concurrent.UnsafeBuffer; //memory buffer used to handle data sent n received efficiently
 import org.junit.Test;
 
 import java.nio.ByteBuffer;

@@ -49,6 +49,7 @@ public class OrderService extends OrderEventListener {
     @Override
     public void onCancelOrder(final CancelOrderDecoder cancel) {
         updateState(find(cancel.orderId()), OrderState.CANCELLED);
+       // children.remove(cancel.orderId());??
         triggerRun();
     }
 
