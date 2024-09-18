@@ -40,6 +40,7 @@ public class MyAlgoLogic implements AlgoLogic {
             }
         }
 
+
         // If there are no active orders, create a new one
         if (totalOrderCount == 0) {
             logger.info("[MYALGO] No active orders found, creating a new order.");
