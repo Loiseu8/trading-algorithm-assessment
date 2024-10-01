@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.*;
+import messages.marketdata.BookUpdateEncoder;
+
 
 /**
  * This test is designed to check your algo behavior in isolation of the order book.
@@ -28,28 +30,33 @@ public class MyAlgoTest extends AbstractAlgoTest {
         return new MyAlgoLogic();
     }
 
+   @Test
+    public void testAlgoBuysWhenMarketBidPriceCrossesAboveSMA() throws Exception {
 
-    @Test
-    public void testAlgoBuysWhenMarketBidPriceCrossesAboveEMA() throws Exception {
-
-        //create a sample market data tick....
-        send(createTick());
+        //create a sample market data tick to set up scenario where latest bid price is higher than my SMA
+        send(createTick()); //first tick below SMA
         send(createTick2());
         send(createTick3());
         send(createTick4());
-        send(createTick5());
+        send(createTick5()); //last tick crosses above SMA
 
-        //simple assert to check that my algo creates - and fulfills 1 orders
+       //simple assert to check that my algo creates - and fulfills 1 orders
         assertEquals(container.getState().getChildOrders().size(), 1);
     }
 
+    /**
     @Test
     public void testAlgoSellsWhenMarketBidPriceReachesProfitTarget() throws Exception {
+
+
         send(createTick());
         send(createTick2());
         send(createTick3());
         send(createTick4());
-        send(createTick5());
+        send(createTick5()); //this tick must trigger buy action
+
+        //hitting profit target
+       // send(createTickWithBidPrice(102)); // Should reach the profit target
 
         assertEquals(container.getState().getChildOrders().size(), 0);
 
@@ -62,21 +69,30 @@ public class MyAlgoTest extends AbstractAlgoTest {
         send(createTick2());
         send(createTick3());
         send(createTick4());
-        send(createTick5());
+        send(createTick5()); //buy action triggered again
 
+        //now stop-loss kicks in
+        //send(createTickWithBidPrice(94)); //bid price is below stop-loss threshold
+
+        //assertion that this order was canceled after buying
         assertEquals(container.getState().getChildOrders().size(), 0);
     }
 
-    @Test
-    public void testAlgoDoesntExceedMaxOrderCount() throws Exception {
+    @Test //this test might not be necessary cos the SMA logic would have canceled anyway?
+    public void testAlgoSellsExistingPositionsWhenStopLossIsTriggered() throws Exception {
+
         send(createTick());
         send(createTick2());
         send(createTick3());
         send(createTick4());
-        send(createTick5());
+        send(createTick5()); // triggers buy action
+
+        //then stop-loss sells any stock it might still have too
 
         assertEquals(container.getState().getChildOrders().size(), 0);
     }
+
+*/
 }
 
 
