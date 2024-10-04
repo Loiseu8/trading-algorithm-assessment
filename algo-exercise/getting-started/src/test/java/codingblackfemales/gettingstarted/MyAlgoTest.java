@@ -1,98 +1,180 @@
 package codingblackfemales.gettingstarted;
 
-import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.container.Actioner;
+import codingblackfemales.container.AlgoContainer;
+import codingblackfemales.container.RunTrigger;
+import codingblackfemales.sequencer.DefaultSequencer;
+import codingblackfemales.sequencer.Sequencer;
+import codingblackfemales.sequencer.consumer.LoggingConsumer;
+import codingblackfemales.sequencer.marketdata.SequencerTestCase;
+import codingblackfemales.sequencer.net.TestNetwork;
+import codingblackfemales.service.MarketDataService;
+import codingblackfemales.service.OrderService;
+import messages.marketdata.*;
+import org.agrona.concurrent.UnsafeBuffer; //memory buffer used to handle data sent n received efficiently
 import org.junit.Test;
-import codingblackfemales.action.Action;
-import codingblackfemales.sotw.SimpleAlgoState;
-import messages.order.Side;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import static org.junit.Assert.*;
-import messages.marketdata.BookUpdateEncoder;
 
+import java.nio.ByteBuffer;
 
-/**
- * This test is designed to check your algo behavior in isolation of the order book.
- *
- * You can tick in market data messages by creating new versions of createTick() (ex. createTick2, createTickMore etc..)
- *
- * You should then add behaviour to your algo to respond to that market data by creating or cancelling child orders.
- *
- * When you are comfortable you algo does what you expect, then you can move on to creating the MyAlgoBackTest.
- *
- */
-public class MyAlgoTest extends AbstractAlgoTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class MyAlgoTest extends SequencerTestCase {
+
+    private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
+    private final BookUpdateEncoder encoder = new BookUpdateEncoder();
+
+    private AlgoContainer container;
 
     @Override
-    public AlgoLogic createAlgoLogic() {
-        //this adds your algo logic to the container classes
-        return new MyAlgoLogic();
+    public Sequencer getSequencer() {
+        final TestNetwork network = new TestNetwork();
+        final Sequencer sequencer = new DefaultSequencer(network);
+
+        final RunTrigger runTrigger = new RunTrigger();
+        final Actioner actioner = new Actioner(sequencer);
+
+        container = new AlgoContainer(new MarketDataService(runTrigger), new OrderService(runTrigger), runTrigger, actioner);
+        //set my algo logic
+        container.setLogic(new MyAlgoLogic());
+
+        network.addConsumer(new LoggingConsumer());
+        network.addConsumer(container.getMarketDataService());
+        network.addConsumer(container.getOrderService());
+        network.addConsumer(container);
+
+        return sequencer;
     }
 
-   @Test
-    public void testAlgoBuysWhenMarketBidPriceCrossesAboveSMA() throws Exception {
+    private UnsafeBuffer createSampleMarketDataTickCreate(){ //should trigger my algo's buy logic
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
 
-        //create a sample market data tick to set up scenario where latest bid price is higher than my SMA
-        send(createTick()); //first tick below SMA
-        send(createTick2());
-        send(createTick3());
-        send(createTick4());
-        send(createTick5()); //last tick crosses above SMA
+        //write the encoded output to the direct buffer
+        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
 
-       //simple assert to check that my algo creates - and fulfills 1 orders
-        assertEquals(container.getState().getChildOrders().size(), 1);
+        //set the fields to desired values
+        encoder.venue(Venue.XLON);
+        encoder.instrumentId(123L);
+
+        encoder.askBookCount(3)
+                .next().price(100L).size(101L)
+                .next().price(110L).size(200L)
+                .next().price(115L).size(5000L);
+
+        encoder.bidBookCount(3)
+                .next().price(98L).size(100L)
+                .next().price(95L).size(200L)
+                .next().price(91L).size(300L);
+
+        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
+        encoder.source(Source.STREAM);
+
+        return directBuffer;
     }
 
-    /**
+    private UnsafeBuffer createSampleMarketDataTickSell(){ //should trigger algo's profitability
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
+
+        //write the encoded output to the direct buffer
+        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
+
+        //set the fields to desired values
+        encoder.venue(Venue.XLON);
+        encoder.instrumentId(123L);
+
+        encoder.askBookCount(3)
+                .next().price(100L).size(101L)
+                .next().price(110L).size(200L)
+                .next().price(115L).size(5000L);
+
+        encoder.bidBookCount(3)
+                .next().price(98L).size(100L)
+                .next().price(95L).size(200L)
+                .next().price(91L).size(300L);
+
+        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
+        encoder.source(Source.STREAM);
+
+        return directBuffer;
+    }
+
+    private UnsafeBuffer createSampleMarketDataTickCancel(){ //should trigger algo's profitability
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
+
+        //write the encoded output to the direct buffer
+        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
+
+        //set the fields to desired values
+        encoder.venue(Venue.XLON);
+        encoder.instrumentId(123L);
+
+        encoder.askBookCount(3)
+                .next().price(100L).size(101L)
+                .next().price(110L).size(200L)
+                .next().price(115L).size(5000L);
+
+        encoder.bidBookCount(3)
+                .next().price(98L).size(100L)
+                .next().price(95L).size(200L)
+                .next().price(91L).size(300L);
+
+        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
+        encoder.source(Source.STREAM);
+
+        return directBuffer;
+    }
+
     @Test
-    public void testAlgoSellsWhenMarketBidPriceReachesProfitTarget() throws Exception {
+    public void testAlgoCreatesChildOrders() throws Exception {
 
+        for (int i = 0; i < 6; i++) { //for loop to ensure my algo gets needed number of orders for sma
+            //create a sample market data tick....
+            send(createSampleMarketDataTickCreate());
+        }
+        //simple assert to check we had 3 orders created
+        assertEquals(container.getState().getChildOrders().size(), 3);
+    }
 
-        send(createTick());
-        send(createTick2());
-        send(createTick3());
-        send(createTick4());
-        send(createTick5()); //this tick must trigger buy action
+    @Test
+    public void testAlgoSellsForProfit() throws Exception {
 
-        //hitting profit target
-       // send(createTickWithBidPrice(102)); // Should reach the profit target
+        for (int i = 0; i < 6; i++) {
 
-        assertEquals(container.getState().getChildOrders().size(), 0);
+            send(createSampleMarketDataTickSell());
+        }
+
+        assertEquals(container.getState().getChildOrders().size(), 3);
+    }
+
+    @Test
+
+    public void testAlgoNeverExceedsMaxOrderCount() throws Exception {
+
+        // Sending more than 20 ticks to trigger multiple buy actions
+
+        for (int i = 0; i <= 20; i++) { //as long as number of orders is below 20, create buy tick
+
+            send(createSampleMarketDataTickCreate());
+
+        }
+
+        // Check that the number of orders does not exceed 20
+
+        assertTrue(container.getState().getChildOrders().size() <= 20);
 
     }
 
     @Test
-    public void testAlgoCancelsExistingBuyOrdersWhenStopLossIsTriggered() throws Exception {
-        //stop loss should do two things: cancel existing buy orders and sell any it might have immediately
-        send(createTick());
-        send(createTick2());
-        send(createTick3());
-        send(createTick4());
-        send(createTick5()); //buy action triggered again
-
-        //now stop-loss kicks in
-        //send(createTickWithBidPrice(94)); //bid price is below stop-loss threshold
-
-        //assertion that this order was canceled after buying
-        assertEquals(container.getState().getChildOrders().size(), 0);
+    public void testAlgoCancelsOrdersWhenStopLossIsTriggered() throws Exception {
+    //Using a for loop to avoid sending multiple ticks using a loop
+    for (int i = 0; i < 6; i++) {
+    send(createSampleMarketDataTickCancel());
+    }
+    // Stop-loss should sell any stock it has, assert no child orders remain
+    assertEquals(0, container.getState().getChildOrders().size());
     }
 
-    @Test //this test might not be necessary cos the SMA logic would have canceled anyway?
-    public void testAlgoSellsExistingPositionsWhenStopLossIsTriggered() throws Exception {
-
-        send(createTick());
-        send(createTick2());
-        send(createTick3());
-        send(createTick4());
-        send(createTick5()); // triggers buy action
-
-        //then stop-loss sells any stock it might still have too
-
-        assertEquals(container.getState().getChildOrders().size(), 0);
-    }
-
-*/
 }
-
-
