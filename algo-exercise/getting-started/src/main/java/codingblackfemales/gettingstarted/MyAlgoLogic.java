@@ -49,7 +49,7 @@ public class MyAlgoLogic implements AlgoLogic {
         // Get the highest (closing) bid price available (best price buyers are willing to pay)
         long bestBidPrice = state.getBidAt(0).getPrice();
 
-        // Maintain queue size, removing oldest if necessary
+        // Maintain queue size, removing oldest as needed
         if (bidPricesOverTime.size() >= maxPricesStored) {
             bidPricesOverTime.remove(); // Removes the oldest price
         }
@@ -89,6 +89,7 @@ public class MyAlgoLogic implements AlgoLogic {
             return new CreateChildOrder(Side.BUY, topBid.getQuantity(), topBid.getPrice());
         }
 
+        //sell action
         if (entryPrice > 0) {
             double profitTarget = entryPrice * 1.00033; //my profit target is 0.033% (btw 1 and 10% each month if successful)
 
@@ -102,25 +103,43 @@ public class MyAlgoLogic implements AlgoLogic {
                 return new CreateChildOrder(Side.SELL, topAsk.getQuantity(), topAsk.getPrice());
             }
 
+            // STOPLOSS MECHANISM
             if (bestBidPrice <= stopLossPrice) {
-                logger.info("[MYALGO] Stop-loss triggered at " + stopLossPrice + ". Cancelling existing order and selling existing positions at market price.");
+                logger.info("[MYALGO] Stop-loss triggered at " + stopLossPrice + ". Cancelling any existing order");
 
-                entryPrice = 0;
+                final var activeOrders = state.getActiveChildOrders();
+                if (activeOrders.size() > 0) { // if there's any...
 
-                //cancels any existing buy order
-                CancelChildOrder cancelOrder = new CancelChildOrder(state.getChildOrders().stream().findFirst().orElse(null));
+                    //it finds wc is the first:
+                    final var option = activeOrders.stream().findFirst();
 
-                //sells any active position (any stock it might have already bought)
-                if (state.getAskLevels() > 0) {
-                    AskLevel topAsk = state.getAskAt(0);
-                    return new CreateChildOrder(Side.SELL, topAsk.getQuantity(), topAsk.getPrice());
-                } else {
-                    logger.info("[MYALGO] No ask levels available, unable to execute sell order at this time.");
-                    return cancelOrder;
+                    //algo cancels an active child order if it's present
+                    if (option.isPresent()) {
+                        var childOrder = option.get();
+
+                        //algo cancels any existing buy order
+                        return new CancelChildOrder(childOrder);
+
+                        /**sells any active position (any stock it might have already bought)
+                         if (state.getAskLevels() > 0) {
+                         AskLevel topAsk = state.getAskAt(0);
+                         return new CreateChildOrder(Side.SELL, topAsk.getQuantity(), topAsk.getPrice());
+                         } else {
+                         logger.info("[MYALGO] No ask levels available, unable to execute sell order at this time.");
+                         return cancelOrder;
+                         } */
+                    }
+
+                    return codingblackfemales.action.NoAction.NoAction;
                 }
             }
+
+            return NoAction.NoAction;
         }
 
+
         return NoAction.NoAction;
+
+
     }
 }

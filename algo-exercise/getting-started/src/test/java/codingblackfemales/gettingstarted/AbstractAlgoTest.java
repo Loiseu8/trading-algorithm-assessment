@@ -16,6 +16,8 @@ import org.agrona.concurrent.UnsafeBuffer;
 
 import java.nio.ByteBuffer;
 
+import static java.time.temporal.TemporalAdjusters.next;
+
 public abstract class AbstractAlgoTest extends SequencerTestCase {
 
 
@@ -76,7 +78,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         return directBuffer;
     }
 
-    protected UnsafeBuffer createTickBuySignal(){
+    protected UnsafeBuffer createTickBuy(){
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
 
@@ -104,7 +106,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         return directBuffer;
     }
 
-    protected UnsafeBuffer createTickProfit(){
+    protected UnsafeBuffer createTickSell(){
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
 
@@ -118,13 +120,13 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.askBookCount(3)
                 .next().price(120L).size(100L)
                 .next().price(125L).size(200L)
-                .next().price(410L).size(5000L);
+                .next().price(115L).size(5000L);
 
         // Setting my bid prices so they reach or exceed my profit target
         encoder.bidBookCount(3)
-                .next().price(400L).size(100L); // ive set this to 200 so that it always meet profit target threshold
-             /**   .next().price(111L).size(200L)
-                .next().price(112L).size(300L); */
+                .next().price(400L).size(100L)
+                .next().price(95L).size(200L)
+                .next().price(91L).size(300L);
 
         encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
         encoder.source(Source.STREAM);
@@ -149,9 +151,9 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
                 .next().price(110L).size(5000L);
 
         encoder.bidBookCount(3)
-                .next().price(93L).size(100L) // Dropping below the stop-loss threshold
-                .next().price(92L).size(200L)
-                .next().price(91L).size(300L);
+                .next().price(80L).size(100L) // Dropping below the stop-loss threshold
+                .next().price(78L).size(200L)
+                .next().price(75L).size(300L);
 
         encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
         encoder.source(Source.STREAM);
