@@ -66,4 +66,8 @@ public class AlgoContainer implements Consumer {
     public SimpleAlgoState getState() {
         return state;
     }
+
+    public AlgoLogic getLogic() {
+        return logic;
+    }
 }

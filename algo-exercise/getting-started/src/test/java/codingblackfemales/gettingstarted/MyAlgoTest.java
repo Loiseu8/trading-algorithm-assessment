@@ -32,7 +32,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }
 
     @Test
-
     public void testAlgoNeverExceedsMaxOrderCount() throws Exception {
 
         // Sending more than 20 ticks to trigger multiple buy actions
@@ -40,13 +39,9 @@ public class MyAlgoTest extends AbstractAlgoTest {
         for (int i = 0; i <= 20; i++) { //as long as number of orders is below 20, create buy tick
 
             send(createTickBuy());
-
         }
-
         // Check that the number of orders does not exceed 20
-
         assertTrue(container.getState().getChildOrders().size() <= 20);
-
     }
 
     @Test
@@ -54,12 +49,15 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
         //create a sample market data tick to set up scenario where latest bid price is higher than my SMA
         for (int i = 0; i < 6; i++) { //for loop to ensure my algo gets needed number of orders for SMA
-            //create a sample market data tick....
+            //create a sample market data tick...
             send(createTickBuy());
         }
 
         //simple assert to check that my algo creates - and fulfills 1 orders
-        assertEquals(container.getState().getChildOrders().size(), 1);
+       /** assertEquals(1, container.getState().getChildOrders().stream()
+                .filter(childOrder -> childOrder.getSide() == Side.BUY)
+                .count()); */
+        assertTrue(container.getState().getChildOrders().size() == 1);
     }
 
      @Test
@@ -73,7 +71,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
      assertEquals(1, container.getState().getChildOrders().stream()
              .filter(childOrder -> childOrder.getSide() == Side.SELL)
              .count());
-
      }
 
      @Test
@@ -86,7 +83,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
      //assertion that this order was canceled after buying
      assertEquals(0, container.getState().getChildOrders().size());
      }
-
 
 }
 

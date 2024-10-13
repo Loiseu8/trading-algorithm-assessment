@@ -26,6 +26,19 @@ public class CreateChildOrder implements Action {
         this.side = side;
     }
 
+    //adding getter methods here so that they can be used in MyAlgoTest
+    public Side getSide() {
+        return side;
+    }
+
+    public long getQuantity() {
+        return quantity;
+    }
+
+    public long getPrice() {
+        return price;
+    }
+
     @Override
     public String toString() {
         return "CreateChildOrder(side=" + side + ",quantity=" + quantity + ",price=" + price + ")";

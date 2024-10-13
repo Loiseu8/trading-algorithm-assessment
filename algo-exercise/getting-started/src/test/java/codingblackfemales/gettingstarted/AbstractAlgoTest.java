@@ -90,7 +90,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.instrumentId(123L);
 
         encoder.askBookCount(3)
-                .next().price(105L).size(100L)
+                .next().price(100L).size(100L) //algo sees this as bid side actually
                 .next().price(110L).size(200L)
                 .next().price(115L).size(5000L);
 
@@ -118,7 +118,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.instrumentId(123L);
 
         encoder.askBookCount(3)
-                .next().price(120L).size(100L)
+                .next().price(200L).size(100L)
                 .next().price(125L).size(200L)
                 .next().price(115L).size(5000L);
 
