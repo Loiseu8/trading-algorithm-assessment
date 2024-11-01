@@ -54,7 +54,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
         }
 
-    /** @Test
+    /* @Test
     public void testAlgoExecutesStopLoss() throws Exception {
         // Send ticks to trigger stop-loss logic
         for (int i = 0; i < 6; i++) {
