@@ -1,0 +1,132 @@
+.market-depth-panel {
+    width: 40%;
+    border-collapse: collapse;
+    /*margin-top: 1px;*/
+    justify-content: center;
+    margin: 0 auto;
+
+
+}
+
+.market-depth-panel th {
+    border: 1px solid #ddd;
+    padding: 3px;
+    text-align: center;
+
+}
+
+
+.market-depth-panel td {
+    border: 1px solid #ddd;
+    padding: 1px;
+    text-align: center;
+}
+
+.market-depth-panel th {
+    background-color: #f8f9fa;
+    color: black;
+    text-align: center;
+}
+
+.market-depth-panel .bid-bar {
+    background-color: #007bff; /* Blue for bids */
+    color: white;
+    text-align: right; /* Align text to the right */
+    padding: 5px;
+    display: flex;
+    justify-content: flex-end; /* Ensure content aligns right */
+    width: 100%;
+    direction: rtl;
+
+}
+
+.market-depth-panel .ask-bar {
+    background-color: #dc3545; /* Red for asks */
+    color: white;
+    text-align: left; /* Align text to the left */
+    padding: 5px;
+    display: flex;
+    justify-content: flex-start; /* Ensure content aligns left */
+    width: 100%;
+}
+
+
+.price-arrow-up {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 10px solid black; /* Green color for upward arrows */
+    display: inline-block;
+    margin-left: 4px; /* Adjust spacing as needed */
+    font-size: 5px;
+}
+
+.price-arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 10px solid black; /* Red color for downward arrows */
+    display: inline-block;
+    margin-left: 4px; /* Adjust spacing as needed */
+    font-size: 5px;
+}
+
+
+.price-cell-bid {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.price-cell-ask {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+}
+
+/*ffg ensures that no border around price*/
+.market-depth-panel .price-cell-bid,
+.market-depth-panel .price-cell-ask {
+    border: none;
+}
+
+.price-arrow {
+    padding-left: 50%;
+    padding-right: 50%;
+    color: grey;
+    cursor: pointer;
+}
+
+.price-arrow-bid {
+    font-size: 12px;
+    margin-right: 40px; /* Adjust spacing as needed */
+    padding-left: 4px;
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.price-arrow-ask {
+    font-size: 12px;
+    padding-left: 4px;
+    justify-content: flex-end;
+    text-align: right;
+
+}
+
+.price-cell-bid {
+    display: flex;
+    align-items: center;
+    justify-content: right; /* Align content towards the left */
+    padding-left: 4px; /* Adjust as needed */
+}
+
+.price-cell-ask {
+    display: flex;
+    align-items: center;
+    justify-content: left; /* Align content towards the right */
+    padding-right: 4px; /* Adjust as needed */
+}

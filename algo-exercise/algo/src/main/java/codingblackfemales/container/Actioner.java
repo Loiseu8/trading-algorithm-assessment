@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class Actioner {
-    private static final Logger logger = LoggerFactory.getLogger(Actioner.class);
+    public static final Logger logger = LoggerFactory.getLogger(Actioner.class);
 
     private final Sequencer sequencer;
 
