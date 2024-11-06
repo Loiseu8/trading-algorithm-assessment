@@ -89,7 +89,7 @@ The following metrics are logged during each trading round:
 * **Sell Order Execution Time**: Logs the time required to execute a sell order once the profit target is reached.
 * **Stop-Loss Execution Time**: Records the time taken to trigger a stop-loss and cancel orders to minimise losses.
 
-In addition, the backtest includes an end-of-round summary outlining total execution time, order counts, and profit made, providing a comprehensive overview of the algorithm's efficiency.
+In addition, my backtest includes an end-of-round summary outlining total execution time, order counts, and profit made, providing a comprehensive overview of the algorithm's efficiency.
 
 ## Future Improvements
 
