@@ -68,7 +68,7 @@ The results demonstrate the algorithm's robustness and ability to achieve profit
 
 As part of this project, a **Depth of Market (DOM) View** UI exercise was completed to simulate a visual interface for market data. The UI component was developed in `ui-front-end` using **React** and **TypeScript** and hosted with **Vite**. Although the UI is not yet integrated directly with the algorithm, it demonstrates the capability to display market depth information and track bid/ask levels dynamically, providing an enhanced user experience.
 
-![UI Exercise Recording](ScreenRecording2024-10-22at11.28.52-ezgif.com-video-to-gif-converter.gif)
+![ezgif-6-204e6c1e15](https://github.com/user-attachments/assets/0e905d1b-7bec-4461-838b-5669d43d09b3)
 
 ## Successes and Goals Achieved
 
