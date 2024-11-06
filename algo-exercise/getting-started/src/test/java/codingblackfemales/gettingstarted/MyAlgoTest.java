@@ -30,7 +30,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
             return new MyAlgoLogic();
         }
 
-        @Test
+        @Test //test for exit condition
         public void testAlgoNeverExceedsMaxOrderCount() throws Exception {
             for (int i = 0; i <= 25; i++) {
                 send(createTick());
@@ -43,18 +43,26 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // Send market data ticks that should trigger buy orders.
         for (int i = 0; i <= 6; i++) {
             send(createTick());
-
         }
             // Refresh the state to ensure order states are updated as expected.
-            SimpleAlgoState state = container.getState();
-            state.refreshState();
+           SimpleAlgoState state = container.getState();
 
             List<ChildOrder> activeOrders = state.getActiveChildOrders();
-            assertEquals("Expected 3 active buy orders, but found " + activeOrders.size(), 3, activeOrders.size());
+            assertEquals("Expected 3 active buy orders, found " + activeOrders.size(), 3, activeOrders.size());
 
         }
 
-    /* @Test
+    @Test
+    public void testAlgoCreatesSellOrder() throws Exception {
+        for (int i = 0; i <= 6; i++) {
+            send(createTickSell());
+        }
+        assertEquals(3, container.getState().getChildOrders().stream()
+                .filter(childOrder -> childOrder.getSide() == Side.SELL)
+                .count());
+    }
+
+     @Test
     public void testAlgoExecutesStopLoss() throws Exception {
         // Send ticks to trigger stop-loss logic
         for (int i = 0; i < 6; i++) {
@@ -70,14 +78,5 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
     }
 
-    @Test
-        public void testAlgoCreatesSellOrder() throws Exception {
-            for (int i = 0; i <= 6; i++) {
-                send(createTickSell());
-            }
-            assertEquals(3, container.getState().getChildOrders().stream()
-                    .filter(childOrder -> childOrder.getSide() == Side.SELL)
-                    .count());
-        } */
     }
 

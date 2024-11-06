@@ -21,7 +21,5 @@ public interface SimpleAlgoState {
 
     public long getInstrumentId();
 
-    void refreshState();
-
     //public List<ChildOrder> getCancelledChildOrders();
 }
