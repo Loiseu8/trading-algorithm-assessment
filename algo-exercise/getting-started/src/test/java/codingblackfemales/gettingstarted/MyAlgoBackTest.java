@@ -11,6 +11,9 @@ import static org.junit.Assert.assertTrue;
 
 import codingblackfemales.sotw.ChildOrder;
 
+import java.time.Duration;
+import java.time.Instant;
+
 // how I understand the backtesting for a trading algorithm is that it ties all the algo functions into one to show how
 // they would work together to form a robust and profitable system that effectively handles various market trends.
 // so I have my original createTick triggering SMA calc and buy logic. after this, my sell logic kicks in
@@ -39,6 +42,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     // Main test method for backtesting the algorithm logic
     @Test
     public void testAlgoBackTest() throws Exception {
+
+        Instant startTime = Instant.now(); // Start tracking overall execution time
 
         try {
             // Sending 6 market data ticks to simulate market activity
@@ -75,6 +80,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             long sellOrdersCount = state.getChildOrders().stream()
                     .filter(order -> order.getSide() == Side.SELL) // this Filters for only sell orders like in my unit test
                     .count();
+           // logger.info("Time to First Sell to Take Profit: " + sellExecutionTime.toMillis() + " ms");
+
             assertEquals("Algo must have placed one or more sell orders", sellOrdersCount);
 
 
@@ -91,19 +98,28 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         }
 
         finally {
-            // Logging the end-of-round summary here
+            // End of round performance and summary logging
+
+            Instant endTime = Instant.now();
+            Duration totalExecutionTime = Duration.between(startTime, endTime);
+
             var state = container.getState();
             long totalOrders = state.getChildOrders().size();
             long totalBuys = state.getChildOrders().stream().filter(order -> order.getSide() == Side.BUY).count();
             long totalSells = state.getChildOrders().stream().filter(order -> order.getSide() == Side.SELL).count();
             long totalCanceled = state.getChildOrders().stream().filter(order -> order.getState() == OrderState.CANCELLED).count();
 
-            logger.info("End of Trading Round Summary is as follows:");
+            logger.info("[Performance Metrics] End of Trading Round Summary is as follows:");
             logger.info("Total Orders: " + totalOrders);
             logger.info("Total Child Orders Bought: " + totalBuys);
             logger.info("Total Child Orders Sold: " + totalSells);
             logger.info("Total Canceled Orders: " + totalCanceled);
+
+            logger.info("Total Execution Time from Start to Finish of Round: " + totalExecutionTime.toMillis() + " ms");
+
+
+        }
         }
     }
-    }
+
 

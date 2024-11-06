@@ -56,12 +56,17 @@ public class MyAlgoLogic implements AlgoLogic {
 
         // Calculate the SMA if enough data points is available
         if (bidPricesOverTime.size() == maxPricesStored) {
+            long startSMATime = System.nanoTime();
+
             double sum = 0;
             for (long price : bidPricesOverTime) {
                 sum += price;
             }
             SMA = sum / maxPricesStored;
             logger.info("[MYALGO] Calculated SMA: " + SMA);
+            long stopSMATime = (System.nanoTime() - startSMATime) / 1000000;
+            logger.info("[PERFORMANCE] Time Algo Took to Calculate SMA: " + stopSMATime + " ms");
+
         } else {
             logger.info("[MYALGO] Not enough prices to calculate SMA.");
             return NoAction.NoAction;
@@ -78,20 +83,25 @@ public class MyAlgoLogic implements AlgoLogic {
             return NoAction.NoAction;
         }
 
-        // Buy order logic: place order if best bid is above SMA and there are less than 3 active orders
+        // Buy logic: place buy order if best bid is equal to or above SMA and there are less than 3 active orders
         if (bestBidPrice >= SMA && activeOrders.size() < 3) {
+            long startBuyTime = System.nanoTime();
+
             logger.info("[MYALGO] Placing buy order for " + quantity + " @ " + bestBidPrice + " (Price >= SMA: " + SMA + ")");
 
-            // Set the fixed entry price if this is the first buy
+            // Set fixed entry price if this is the first buy
             if (fixedEntryPrice == 0) {
                 fixedEntryPrice = bestBidPrice;
             }
 
+            long stopBuyTime = (System.nanoTime() - startBuyTime) / 1000000;
+            logger.info("[PERFORMANCE] Time Algo Took to Create Buy Order: " + stopBuyTime + " ms");
             return new CreateChildOrder(Side.BUY, quantity, bestBidPrice);
         }
 
         // Sell logic: place sell order at best bid price if the profit target is reached
         if (!activeOrders.isEmpty() && bestBidPrice >= profitTarget) {
+            long startSellTime = System.nanoTime();
 
             // Calculating the profit for the current trade and add it to totalProfit
             profit = (bestBidPrice - fixedEntryPrice) * quantity;
@@ -100,18 +110,23 @@ public class MyAlgoLogic implements AlgoLogic {
             logger.info("[MYALGO] Selling to take profit at " + bestBidPrice);
             logger.info("[MYALGO] Profit from this trade: " + profit + ". Total profit so far: " + totalProfit);
 
+            long stopSellTime = (System.nanoTime() - startSellTime) / 1000000;
+            logger.info("[PERFORMANCE] Time Algo Took to Execute a Sell For Profit: " + stopSellTime + " ms");
             return new CreateChildOrder(Side.SELL, quantity, bestBidPrice);
         }
 
         // Stop-loss logic: if best bid falls below stop-loss price, cancel the first active order.
         // algo repeats this cancellation as long as this condition holds and there are active orders
         if (!activeOrders.isEmpty()) {
+            long startStopLossTime = System.nanoTime();
             var firstOrder = activeOrders.stream().findFirst().orElse(null);
             if (firstOrder != null && bestBidPrice <= stopLossPrice) {
                 logger.info("[MYALGO] Stop-loss triggered at " + stopLossPrice + ". Cancelling order: " + firstOrder);
 
-                logger.info("[MYALGO] Profit from this trade: " + profit + ". Total profit so far: " + totalProfit);
+                logger.info("[MYALGO] Profit from this trade: " + profit + ". Total profit made from this round of trades: " + totalProfit);
 
+                long stopLossExecutionTime = (System.nanoTime() - startStopLossTime) / 1000000;
+                logger.info("[PERFORMANCE] Stop-Loss Execution Time: " + stopLossExecutionTime + " ms");
                 return new CancelChildOrder(firstOrder);
             }
         }
